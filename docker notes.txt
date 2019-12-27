@@ -1,0 +1,28 @@
+https://www.docker.com/products/docker-desktop
+https://docs.docker.com/engine/reference/run/
+
+- Windows Powershell
+
++++ get docker version
+> docker version
+
++++ run command
+docker run <image name> <command override>
+
+> docker run busybox echo hi there
+* get busybox and then run echo command
+
++++ list running containers
+* run a process first ex.
+> docker run busybox ping yahoo.com
+
+* to list running containers
+> docker ps
+
+* to stop 
+> ctrl + c
+
+* to kill
+> docker kill <my_container>
+
+
