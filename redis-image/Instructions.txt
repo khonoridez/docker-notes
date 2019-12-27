@@ -1,0 +1,96 @@
+1. Create file "Dockerfile"
+
+2. Set docker file
+# Use an existing docker image as a base
+FROM alpine 
+
+# Download and install a dependency
+RUN apk add --update redis
+
+# Tell the image what to do when it starts as a container
+CMD ["redis-server"]
+
+3. Build in terminal
+> docker build .
+// command to produce to the docker cli
+// outputs id  ---> ee2c1352d8f4
+
+4. Run the Container id
+> docker run ee2c1352d8f4
+// * Ready to accept connections
+
+5. ctrl + C to stop
+
++++ Notes Dockerfile +++
+// FROM - Instruction telling Docker Server what to do
+// alpine - Argument to instruction
+FROM alpine
+RUN apk add --update redis
+CMD ["redis-server"]
+
+* Writing a dockerfile - Being given a computer with no OS and being told to install Chrome
+
+// Steps:
+1. FROM alpine 
+// We want to use alpine image as the operating system (https://alpinelinux.org/about/)
+// Downloaded alpine image
+// Created container out of the image
+
+2. RUN apk add --update redis 
+// Executed second command
+// ---> Running in 415022c096d2
+// apk (apache package, preinstalled in the alpine image)
+// downloaded/installed redis
+// Stopped and removed container
+> Removing intermediate container 415022c096d2
+// Saved temporary container (snapshot) with redis included
+ ---> 40352e4a64fd
+
+3. CMD ["redis-server"]
+// CMD tells container to run redis-server when started
+---> Running in 0b13fcdc1c04
+// temporary container (snapshot) issueing CMD command
+Removing intermediate container 0b13fcdc1c04
+// Final Container Id after 3 steps:
+ ---> ee2c1352d8f4
+Successfully built ee2c1352d8f4
+
+// Final container:
+// We either change the file system or modify the startup command
+ee2c1352d8f4 image
+FS Snapshot that contains alpine with redis
+Startup Command is redis-server
+
+// Add:
+RUN apk add --update gcc
+
+// Running this image via terminal:
+docker run <Last container id>
+docker run 1a554f495d08
+
++++ Tagging Image +++
+// Naming convention
+// docker build -t <Your docker Id>/<Repo/Project Name>:<Version> .
+> docker build -t oznyakis/redis:latest .
+
+Successfully built 4748c6597e6b
+Successfully tagged oznyakis/redis:latest
+
+> docker run oznyakis/redis
+
+
++++ Manual Image generation +++
+> docker run -it alpine sh
+// manually add redis
+> apk add --update redis
+
+// on second terminal window
+// manually add startup command
+// get container id by using docker ps
+> docker ps
+> docker commit -c 'CMD ["redis-server"]' <container id>
+sha256:93c800497fac0f80c51f9c901076ab9bad8808a6b5d640bfb1018da0fcd3ca0e
+// run the resulting id (can also work by pasting just partial id)
+> docker run 93c800497fac0f80c51f9c901076ab9bad8808a6b5d640bfb1018da0fcd3ca0e
+
+!! Error /bin/sh: [redis-server]: not found
