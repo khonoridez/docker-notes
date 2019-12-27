@@ -1,28 +1,59 @@
-https://www.docker.com/products/docker-desktop
-https://docs.docker.com/engine/reference/run/
++++ running container with default command +++
+ex. 
+> docker start -a 4814e4e72e69
+- hi there
+* where container id 4814e4e72e69 is "docker run busybox echo hi there"
+* we cannot replace default command "echo hi there"
 
-- Windows Powershell
++++ multi-command containers sample +++
+> docker exec -it <container id> <command>
 
-+++ get docker version
-> docker version
+// We need to install redis and redis-cli commands in a single container
+// Install redis-server in Docker
+> docker run redis
 
-+++ run command
-docker run <image name> <command override>
+// Add additional command in the container, and will enter redis-cli
+> docker exec -it c5ebff149b43 redis-cli
+- 127.0.0.1:6379>
 
-> docker run busybox echo hi there
-* get busybox and then run echo command
+// Test redis
+> set myvalue 5
+- OK
+> get myvalue
+"5"
 
-+++ list running containers
-* run a process first ex.
-> docker run busybox ping yahoo.com
+// Sample without -it
+// terminal will not enter redis-cli
+docker exec c5ebff149b43 redis-cli
 
-* to list running containers
-> docker ps
++++ Linux processes +++
+1. STDIN
+2. STDOUT
+3. STDERR
 
-* to stop 
-> ctrl + c
-
-* to kill
-> docker kill <my_container>
+-it : -i -t (2 separate flags)
+    : -i attach terminal to the stdin of the process
+    : -t indented format
 
 
++++ Full temrinal access (Command Prompt) inside container (sh) +++
+> docker exec -it <container id> sh
+
+// ex. for current redis-cli
+> docker exec -it c5ebff149b43 sh
+ 
+ +++ Sample starting image with a shell +++
+// Creating and running:
+> docker run <image name>
+
+> docker run -it busybox sh
+
++++ Sample Container Isolation +++
+// Run 3 instances of busybox with shell in separate terminals
+> docker run -it busybox sh
+> docker run -it busybox sh
+> docker run -it busybox sh
+
+// Creating new file in one container will not show up in other containers
+> touch helloworld
+> ls // in other containers will not show this new directory

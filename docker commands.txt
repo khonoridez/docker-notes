@@ -1,0 +1,84 @@
+https://www.docker.com/products/docker-desktop
+https://docs.docker.com/engine/reference/run/
+
+- Windows Powershell
+
++++ get docker version +++
+> docker version
+
++++ creating and running command +++
+docker run <image name> <command override>
+
+// get busybox and then run echo command
+> docker run busybox echo hi there
+
+// create a container
+// preparing the snapshot to the container hdd
+> docker create <image name>
+
+// start a container
+// executing the startup command
+> docker start <container id>
+
+ex.
+> docker create hello-world
+9bf218bac8b4b427e9fa0d6e9569e4322727191e12c5dc8dc1f334f0ca26e8ae
+> docker start -a 9bf218bac8b4b427e9fa0d6e9569e4322727191e12c5dc8dc1f334f0ca26e8ae
+
++++ list running containers +++
+// run a process first ex.
+> docker run busybox ping yahoo.com
+
+// to list running containers
+> docker ps
+
+// to list all containers created
+> docker ps --all
+
+// to list all containers
+> docker container ls -a
+
+// hot key to stop
+> ctrl + c or ctrl + d or type exit
+
+// to stop
+// SIGTERM message (terminate signal), do a some cleanup first
+> docker stop <container id>
+
+// to kill
+// SIGKILL (kill signal), shut down ommediatly
+> docker kill <container id>
+
+// to remove a container
+> docker container rm <container id>
+
+// to remove all stopped containers, networks not used, all dangling images, all build cache
+> docker system prune
+
+// Execute additional command in a container
+// -it : To provide input to a container
+> docker exec -it <container id> <command>
+
++++ get logs +++
+// get record of logs emitted from the container, inspect container for debug etc
+> docker logs <container id>
+
+ex. 
+> docker create busybox echo hi there
+// without -a
+> docker start 73a5c298a12afb3db11e07b49b6a245be6d8a650f62215e4e17734a9d1187dbb
+> docker logs 73a5c298a12afb3db11e07b49b6a245be6d8a650f62215e4e17734a9d1187dbb
+- hi there
+
++++ Full temrinal access inside container (sh) +++
+ex.
+> docker exec -it <container id> sh
+
++++ flags +++
+-a : watch for output from the container and print to the terminal, give output
+-it : -i -t (2 separate flags)
+    : -i attach terminal to the stdin of the process
+    : -t indented format
+sh : Command processor (shell), allow to type commands in temrinal. 
+    Other Command processors: (bash, powershell, zsh)
+
