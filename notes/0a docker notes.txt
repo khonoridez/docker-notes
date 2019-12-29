@@ -35,7 +35,6 @@ docker exec c5ebff149b43 redis-cli
     : -i attach terminal to the stdin of the process
     : -t indented format
 
-
 +++ Full temrinal access (Command Prompt) inside container (sh) +++
 > docker exec -it <container id> sh
 
@@ -57,3 +56,11 @@ docker exec c5ebff149b43 redis-cli
 // Creating new file in one container will not show up in other containers
 > touch helloworld
 > ls // in other containers will not show this new directory
+
++++ Images repository Docker Hub +++
+https://hub.docker.com/
+
++++ Tagging Image +++
+// Naming convention
+// docker build -t <Your docker Id>/<Repo/Project Name>:<Version> .
+> docker build -t oznyakis/redis:latest .

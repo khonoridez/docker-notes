@@ -1,3 +1,22 @@
+
+Dockerfile (Configuration to  define how our container should behave)
+-> Docker Client
+-> Docker Server
+-> Usable Image
+
+++ Flow of container creation
+Template (steps)
+1. Specify a base image
+2. Run some commands to install additional programs
+3. Specify a command to run on container startup
+
+ex. Creating Redis
+1. FROM alpine (Specify a base image)
+2. RUN apk add --update redis (Run some commands to install additional programs)
+3. CMD ["redis-server"] (Specify a command to run on container startup)
+
++++ Instructions for /redis-image/Dockerfile +++
+
 1. Create file "Dockerfile"
 
 2. Set docker file

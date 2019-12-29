@@ -1,0 +1,150 @@
+Create a node js app and running in a docker container
+
+Steps:
+1. Create a Node Js web app
+2. Create a Dockerfile
+3. Build image from Dockerfile
+4. Run image as container
+5. Connect to a web app from a browser
+
++++ Create a Node Js web app +++
+1. Create directory simpleweb
+2. create package.json
+{
+  "dependencies": {
+    "express": "*"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
+3. create index.js
+
+++ Node JS Apps
+1. npm install
+- Have to install dependencies before running the app
+- Install deps by running "npm install"
+- Assumes 'npm' is installed
+
+2. npm start
+- Have to run a command to start up the server
+- Start server by running 'npm start'
+- Assumes 'npm' is installed
+
+++ Flow of container creation notes
+Template (steps)
+1. Specify a base image
+2. Run some commands to install additional programs
+3. Specify a command to run on container startup
+
+ex. Creating Redis
+1. FROM alpine (Specify a base image)
+2. RUN apk add --update redis (Run some commands to install additional programs)
+3. CMD ["redis-server"] (Specify a command to run on container startup)
+
+ex. Running Node
+1. FROM alpine (Specify a base image)
+2. RUN npm install (Run some commands to install additional programs)
+3. CMD ["npm", "start"] (Specify a command to run on container startup)
+++ End Flow of container creation notes
+
+3. Create Dockerfile on simpleweb sample
+error: /bin/sh: npm: not found
+- no copy of npm in base alpine
+- alpine, about 5mb OS
+- 1st option find base image that has node and npm preinstalled
+- 2nd option run addition command to insall npm and node
+
+4. Grab image with node, npm preinstalled, repository in Docker Hub website
+ex. getting base image with a specific version
+> FROM node:6.14
+> FROM node:alpine (alpine (term) means a version that is small and compact as possible)
+
+5. Replace FROM alpine to FROM node:alpine
+error: ENOENT: no such file or directory, open '/package.json'
+- package.json is not included in File System snapshot
+- We only have file system from node:alpine image
+
+6. Add COPY instruction to add files before running npm install
+> COPY ./ ./
+./ : Path to the folder to copy from on machine relative to the build context
+
+- Remove alpine image
+- Run docker build .
+
+errors: (These errors are fine)
+npm notice created a lockfile as package-lock.json. You should commit this file.
+npm WARN !invalid#2 No description
+npm WARN !invalid#2 No repository field.
+npm WARN !invalid#2 No license field.
+
+7. Build docker with tag
+> docker build -t oznyakis/simpleweb .
+
+8. Run docker image
+> docker run oznyakis/simpleweb
+Listening on port 8080
+
+9. Container port mapping
+- Redirect port to container's own network port
+> docker run -p 8080 (incoming request port on localhost):8080 (port inside container) <image id>
+> docker run -p 8080:8080  oznyakis/simpleweb
+
+- We can now visit localhost:8080 to redirect to the docker ccontainer
+
++++ Specifying a Working Directory +++
+ex. Run the image with shell
+
+1. Check file system with ls
+> docker run -it oznyakis/simpleweb sh
+> ls
+- Verify all files and dependendcies are installed in root (not good practice due to probable conflicts)
+- OS (alpine) system files and project files all in same directory
+
+2. Modify directory structure (nested directory) by specifying WORKDIR
+Add to Dockerfile:
+> WORKDIR /usr/app
+// any following command will be executed relative to this path in the container
+
+3. Rebuild container
+> docker build -t oznyakis/simpleweb .
+// Everything was rerun, no cahced versions
+
+4. Start the container
+> docker run -p 8080:8080 oznyakis/simpleweb
+
+5. Attach shell on container to view using ls
+> docker exec -it 43c198b0dd9c sh
+// Will enter in specified WORKDIR
+/usr/app #
+
+> ls
+// Verify that we only have project files here and not OS (alpine) system files
+
+
++++ Minimizing Cache Busting and Rebuilds +++
+++ Unnecessary Rebuilds
+- Changes will not autmotically reflect in container (no hot reloading)
+- Container needs to be rebuilt after a change
+- Not particulary useful since a change will trigger other steps to rerun and not from cache (e.g. npm install)
+
+1. Specify files in COPY 
+ex. For npm install
+COPY ./package.json ./
+RUN npm install
+COPY ./ ./
+
+// split the COPY to 2 different steps
+// Initial copy step:
+// Find the package.json file and copy to the working container
+// Run npm install
+// Then copy everything else
+// npm install will now not be rerun until there are changes above/before it
+// changes are now triggered in the COPY ./ ./ part
+
+2. Run build
+> docker build -t oznyakis/simpleweb .
+// Make a change to index.js
+// Rerun Build
+// verify npm install will run from cache
+// only COPY ./ ./ rerun due to file change

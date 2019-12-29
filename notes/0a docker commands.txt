@@ -59,6 +59,9 @@ ex.
 // -it : To provide input to a container
 > docker exec -it <container id> <command>
 
+// docker run with port mapping
+> docker run -p 8080 (incoming request port on localhost):8080 (port inside container) <image id>
+
 +++ get logs +++
 // get record of logs emitted from the container, inspect container for debug etc
 > docker logs <container id>
