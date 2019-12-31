@@ -148,3 +148,6 @@ COPY ./ ./
 // Rerun Build
 // verify npm install will run from cache
 // only COPY ./ ./ rerun due to file change
+
++++ Container Staus +++
+> docker-compose ps

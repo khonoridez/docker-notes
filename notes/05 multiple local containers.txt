@@ -1,0 +1,163 @@
+Web Package -> Node App -> Redis (In memory store)
+
+1. Proposed Setup
+
+Docker Container
+- Node App
+- Redis
+
+// However if we have multiple instances Redis will have mutliple instances as well
+
+2. We will have to scale Node App only
+
+Docker Container
+- Node App
+
+Docker Container
+- Node App
+
+Docker Container
+- Node App
+
+Docker Container
+- Redis
+
++++ Project Setup +++
+
+++ Redis ++
+1. Create package.json file
+- Get dependencies
+express
+redis
+2. Create index.js
+Setup and run redis
+
+++ Dockerfile for Node app ++
+1. Create Dockerfile
+- node:alpine
+2. Build container
+> docker build .
+3. Rerun docker build with tag so as we do not need to reference container id
+> docker build -t oznyakis/visits:latest .
+
+++ Configuring Redis ++
+1. Run redis (public) instance
+> docker run redis
+2. Run "visits" container
+> docker run oznyakis/visits
+
+// Error code: 'ECONNREFUSED',
+// The 2 containers are not connected
+
+Note:
+This Computer
+Docker Container
+- Node App (oznyakis/visits)
+---->
+Docker Container
+- Redis (public Redis image)
+
+// We have to set a network infrastructure so the 2 could communicate
+// Options
+1. Use Docker CLI's Networking Features (Not recommended)
+- This is what we are using until now
+2. Use Docker Compose
+- Function as Docker CLI but allows mutliple commands more quickly
+a. Separate CLI that gets installed along with Docker
+b. Used to start up multiple Docker containers at the same time
+- Automatiocally connect them together
+c. Automates some of the long-winded arguments we were passing to 'docker run'
+
+++ Docker Compose ++
+ex. docker-compose.yml
+Here are the containers I want to Create
+- redis-server
+-- Make it using the 'redis' image
+
+- node-app
+-- make it using the Dockerfile in the current directory
+-- Map port 8081 to 8081
+
+1. Create docker-compose.yml
+version: "3"
+services:
+  redis-server: 
+    image:'redis'
+  node-app: 
+    build: .
+    ports: - "4001:8081"
+
+// By putting the 2 services in ssame compose file, this connects both automatically
+
+2. Call redis server in index.js
+const client = redis.createClient({
+  host: "redis-server",
+  port: 6379
+});
+
+++ Starting Docker Compose ++
+!! errors in indentation
+// automatically looks for a docker-compose.yml
+docker run myimage -> docker-compose up
+docker build .
+docker run myimage -> docker-compose up --build
+
+1. docker-compose up
+Process:
+Creating network "visits_default" with the default driver
+// Created a network that joins images together
+
+Creating visits_redis-server_1 ... done
+Creating visits_node-app_1     ... done
+
+// Verify http://localhost:4001 (Definition from docker-compose.yml) 
+
+++ Stopping Docker Compose ++
+// Stopping containers
+> docker-compose down
+
+++ Container Maintenance ++
+ex. we will force the app to freeze
+1. Modify index.js to use 'process'
+2. rerun docker compose with --build flag to force a rebuild
+> docker-compose up --build
+3. verify at http://localhost:4001
+- visits_node-app_1 exited with code 0
+4. verify in new terminal with docker ps
+- node server not running anymore
+- redis however is still running
+
+++ Container Restart policies ++
+- "no" - Never attempt to restart this container if it stops or crashes (always put in quotes in yml file)
+- "always" - If this container stops "for any reason" always attempt to restart it
+- "on-failure" - Only restart if the container stops with an error code
+- "unless-stopped" - Always restart unless dev forcibly stop it
+
+// under docker-compose, add restart key
+...
+node-app:
+    restart: always
+    build: .
+    ports:
+      - "4001:8081"
+
+1. verify terminal restarts the service
+visits_node-app_1 exited with code 0
+node-app_1      | 
+node-app_1      | > @ start /usr/app
+node-app_1      | > node index.js
+node-app_1      |
+node-app_1      | Listening on port 8081
+
+2. replace policy to 
+> restart: on-failure
+// service will not restart since it stoped due to process Function
+
+3. replace policy to 
+> restart: unless-stopped
+// always restart unless we encounter a terminal stop command
+
+++ always vs on-failure
+- containers such as web server must always be available
+- worker process, does its job and then closes are good for on-failure
+

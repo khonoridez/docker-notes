@@ -55,6 +55,9 @@ ex.
 // to remove all stopped containers, networks not used, all dangling images, all build cache
 > docker system prune
 
+// docker cleanup, all images and cache
+docker system prune -a
+
 // Execute additional command in a container
 // -it : To provide input to a container
 > docker exec -it <container id> <command>
@@ -84,4 +87,20 @@ ex.
     : -t indented format
 sh : Command processor (shell), allow to type commands in temrinal. 
     Other Command processors: (bash, powershell, zsh)
+
+++ docker compose ++
+// running docker compose
+> docker-compose up
+
+// running forcing a build
+> docker-compose up --build
+
+// stopping docker compose containers
+> docker-compose down
+
+// building docker compose with no cache
+> docker-compose build --no-cache
+
+// Check container status
+> docker-compose ps
 
