@@ -1,0 +1,111 @@
+Loop
+Development -> Testing -> Deployment
+
+++ Development Workkflow ++
+1. Dev phase
+From Github Repo
+- Branches
+a. feature
+b. master
+- Pushing changes will trigger a Pull Request to master
+
+2. Test phase
+Travis CI
+- Continous integration provider
+- Pull code and run tests
+- Merge to master
+
+3. Prod
+ex. AWS Hosting
+- Travis CI will push to AWS Hosting
+- Tests run
+- Deploy to AWS Elastic Beanstalk
+
+++ Docker ++
+- Docker is not required on this Workkflow
+- Docker is a tool in a normal development Workkflow
+- Docker makes some of these tasks a lot easier
+
+
+++ Setup React App ++
+
+1. Check if node is installed
+https://nodejs.org/en/download/
+> node -v
+
+2. Install via Create React App
+> npx create-react-app frontend
+
+3. npm commands for react app
+> npm run start
+// Starts up development server. For development use only
+
+> npm run test
+// Runs tests associated with the project
+
+> npm run build
+// Builds a production version of the application
+// Under /build/static/js/ we can see a main..js file which is the app
+// We will serve the index.html, and the main js file to the hosting platform (e.g. AWS service)
+
+++ Docker Container Configuration ++
+1. In Development
+Docker container
+> npm run start
+
+2. In production
+Docker container
+> npm run build
+
+++ Docker Setup ++
+1. Create on root App directory 
+/Dockerfile.dev
+/Dockerfile
+
+2. Configure Dockerfile.dev
+
+3. Run docker build specifying file
+> docker build -f Dockerfile.dev .
+
+4. Duplicate Dependencies
+// Sending build context to Docker daemon  181.3MB
+// Dependencies coming from node_modules folder (installed by create-react-app) are being copied too
+// We have to delete node_modules and rerun docker build so it will install those dependencies
+
+5. Create container using the resulting built Container id
+> docker run <container id>
+// Verify that we CANNOT visit the app
+You can now view frontend in the browser.
+  Local:            http://localhost:3000/
+  On Your Network:  http://172.17.0.2:3000/
+
+6. Expose port inside the docker container using -p flag
+> docker run -p 3000:3000 <container id>
+
+++ Docker Volumes ++
+// Change in a source file (App.js) does not reflect in Container
+// We need to adjust docker command to replace COPY and use placeholders/reference of directories
+
+1. Replace docker run command
+// For git bash etc.:
+> docker run -p 3000:3000 -v /app/node_modules -v $(pwd):/app <image id>
+
+// For windows:
+> docker run -p 3000:3000 -v /app/node_modules -v pwd:/app CONTAINER_ID
+> docker run -p 3000:3000 -v /app/node_modules -v ${pwd}:/app CONTAINER_ID
+
+// -v /app/node_modules - put a bookmark on the node_modules folder
+// -v $(pwd):/app - map the '/app' folder
+
+//(pwd command is getting the present working directory)
+// Take everything inside  present directory and map it to the app folder
+// However since we deleted node_modules it's trying to reference something that does not exist
+
+docker run -p 3000:3000 -v /app/node_modules -v pwd:/app fbe187002c23
+docker run -p 3000:3000 -v /app/node_modules -v ${pwd}:/app fbe187002c23
+!! not working, not autmatically updating
+
+++ Docker Volumes by Docker Compose ++
+1. Create docker compose file
+docker-compose.yml
+
