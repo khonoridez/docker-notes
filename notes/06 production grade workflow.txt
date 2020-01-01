@@ -1,0 +1,36 @@
+Loop
+Development -> Testing -> Deployment
+
+++ Development Workkflow ++
+1. Dev phase
+From Github Repo
+- Branches
+a. feature
+b. master
+- Pushing changes will trigger a Pull Request to master
+
+2. Test phase
+Travis CI
+- Continous integration provider
+- Pull code and run tests
+- Merge to master
+
+3. Prod
+ex. AWS Hosting
+- Travis CI will push to AWS Hosting
+- Tests run
+- Deploy to AWS Elastic Beanstalk
+
+++ Docker ++
+- Docker is not required on this Workkflow
+- Docker is a tool in a normal development Workkflow
+- Docker makes some of these tasks a lot easier
+
+
+++ Setup ++
+
+1. Check if node is installed
+https://nodejs.org/en/download/
+> node -v
+2. 
+
