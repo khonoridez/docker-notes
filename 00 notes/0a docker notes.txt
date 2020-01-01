@@ -70,6 +70,16 @@ https://hub.docker.com/
 https://medium.com/@kenanbek/docker-cleanup-build-and-force-to-rebuild-images-containers-volumes-and-networks-dc70fd4ccec0
 
 docker system prune -a
-
+// or
 docker system prune
 docker-compose build --no-cache
+
++++ Warning regarding permissions +++
+SECURITY WARNING: You are building a Docker image from Windows against a non-Windows Docker host. All files and directories added to build context will have '-rwxr-xr-x' permissions. 
+It is recommended to double check and reset permissions for sensitive files and directories.
+
++++ Hot reload not working on Windows +++
+If you are on Windows Pro or Windows Home you may have noticed that when adding a test or making a change to the App.test.js the tests are not re-running inside the container.
+
+While this works on macOS (and likely Linux), Jest watchers seem to be completely broken on all versions of Windows. We are looking into a potential fix or hack to get this 
+working again and will update this note if we find one.

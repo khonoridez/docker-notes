@@ -105,7 +105,105 @@ docker run -p 3000:3000 -v /app/node_modules -v pwd:/app fbe187002c23
 docker run -p 3000:3000 -v /app/node_modules -v ${pwd}:/app fbe187002c23
 !! not working, not autmatically updating
 
+https://lockmedown.com/docker-tutorial-development-image/
+
 ++ Docker Volumes by Docker Compose ++
 1. Create docker compose file
 docker-compose.yml
 
+// Run docker-compose up
+> docker-compose up
+
+!! ERROR: Cannot locate specified Dockerfile: Dockerfile
+// Because our docker file was not in the correct naming convention 
+
+2. Force docker compose using docker custom file
+build:
+  context: .
+  dockerfile: Dockerfile.dev
+
+!! Error 
+Creating frontend_web_1 ... error
+ERROR: for frontend_web_1  Cannot create container for service web: b'open \\\\.\\pipe\\docker_d4w_systray: The system cannot find the file specified.'
+https://gavinb.net/2017/03/06/docker-on-windows-mounting-volumes/
+> Resolution: Adjust shared drive options in Docker Desktop settings
+
+++ Docker Tests using Travis CI ++
+
+1. Append command in docker run
+> docker run -it <container id> npm run test
+
+2. Rerunning tests tying with existing running (docker ps to verify) container 
+> docker exec -it <container id> npm run test
+
+!! Not working
+If you are on Windows Pro or Windows Home you may have noticed that when adding a test or making a change to the App.test.js the tests are not re-running inside the container.
+
+While this works on macOS (and likely Linux), Jest watchers seem to be completely broken on all versions of Windows. We are looking into a potential fix or hack to get this 
+working again and will update this note if we find one.
+
+3. Run test via second service in .yml
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - /app/node_modules
+      - .:/app
+    command: ["npm", "run", "tests"]
+
+> rerun docker-compose up --build
+
+++ Production Server ++
+// We will make use of nginx as opposed to built in Dev server
+Web Container
+nginx -> index.html
+      <- main.js
+
+Steps:
+1. Use node:alpine
+2. Copy the package.json file
+3. Install dependencies (Only add dependencies needed for npm run build)
+4. Run 'npm run build'
+5. Start nginx (How do we get nginx added)
+
+!!! We need 2 base images
+// Steps to create a multi-step docker build
+1st block: Build phase
+1. Use node:alpine
+2. Copy the package.json file
+3. Install dependencies
+4. Run 'npm run build'
+
+2nd block: Run Phase
+1. Use nginx
+2. Copy over the result of 'npm run build'
+3. Start nginx
+
+++ Create production server container ++
+1. Create and configure in Dockerfile "builder"
+
+FROM node:alpine as builder
+WORKDIR /app
+COPY package.json .
+RUN npm install
+COPY . .
+RUN npm run build
+
+// path of the files will be at /app/build
+
+2. Create and configure in Dockerfile nginx
+FROM nginx
+COPY --from=builder /app/build /usr/share.nginx/html
+// copy from app/build to nginx static html directory
+// https://hub.docker.com/_/nginx/
+// No need to specify RUN as nginx by default runs the container
+
+3. Running nginx
+// Since we have convention default filename Dockerfile
+> docker build .
+
+// run container, by default nginx uses port 80
+> docker run -p 8080:80 <container id>
+
+// Verify site is running at http://localhost:8080
